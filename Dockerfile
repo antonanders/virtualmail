@@ -9,12 +9,10 @@ ENV DOVECOT_MAIN 2.2
 ENV DOVECOT_VERSION 2.2.16
 ENV DOVECOT_PIGEONHOLE 0.4.6
 ENV SYMPA_VERSION 6.1.24
-ENV OPENDKIM_VERSION 2.10.1
-ENV PYPOLICYD_SPF_MAIN 1.3
-ENV PYPOLICYD_SPF_VERSION 1.3.1
 ENV CLAMAV_VERSION 0.98.6
 ENV AMAVISD_NEW_VERSION 2.10.1
 ENV GREYLIST_VERSION 4.4.3
+ENV ENMA_VERSION 1.2.0
 
 ENV AMAVISD_DB_HOME /var/lib/amavis/db
 
@@ -37,7 +35,8 @@ RUN groupadd -g 1000 vmail && useradd -g vmail -u 1000 vmail -d /var/vmail && \
     libcrypt-openssl-x509-perl libfcgi-perl libsoap-lite-perl libdata-password-perl libspf2-dev \
     libfile-nfslock-perl fcgiwrap nginx libcgi-fast-perl libmail-spf-perl libpthread-stubs0-dev \
     libmail-spf-xs-perl libmilter-dev libpcre3-dev libssl-dev libbsd-dev ssl-cert python3-pip \
-    libnet-libidn-perl libunix-syslog-perl libarchive-zip-perl libglib2.0-dev intltool ruby-dev byacc libicu-dev
+    libnet-libidn-perl libunix-syslog-perl libarchive-zip-perl libglib2.0-dev intltool ruby-dev byacc libicu-dev \
+    libldns-dev
 
 # ClamAV
 RUN addgroup clamav && addgroup amavis && \
@@ -130,21 +129,12 @@ RUN mkdir -p /usr/src/build/greylist && cd /usr/src/build/greylist && \
 
 ADD resources/greylist /etc/greylist
 
-# OpenDKIM
-RUN useradd opendkim && \
-    mkdir -p /usr/src/build/opendkim && cd /usr/src/build/opendkim && \
-    curl -L http://sourceforge.net/projects/opendkim/files/opendkim-${OPENDKIM_VERSION}.tar.gz/download | tar zxv --strip-components=1 && \
-    ./configure --prefix=/usr && make && make install
-
-ADD resources/opendkim /etc/opendkim
-
-# SPF Policyd
-RUN mkdir -p /etc/postfix-policyd-spf-python && \
-    pip3 install authres pyspf https://ipaddr-py.googlecode.com/files/ipaddr-2.1.5-py3k.tar.gz py3dns --pre && \
-    pip3 install https://launchpad.net/pypolicyd-spf/${PYPOLICYD_SPF_MAIN}/${PYPOLICYD_SPF_VERSION}/+download/pypolicyd-spf-${PYPOLICYD_SPF_VERSION}.tar.gz && \
-    mv /usr/local/bin/policyd-spf /usr/bin/policyd-spf
-
-ADD resources/policy-spf/policyd-spf.conf /etc/postfix-policyd-spf-python/policyd-spf.conf
+# ENMA
+RUN mkdir -p /usr/src/build/enma && cd /usr/src/build/enma && \
+    curl -L http://sourceforge.net/projects/enma/files/ENMA/1.2.0/enma-1.2.0.tar.gz/download | tar zxv --strip-components=1 && \
+    LDFLAGS="-L/usr/lib/libmilter" CFLAGS="-I/usr/include/libmilter" \
+    ./configure --prefix=/usr --sysconfdir=/etc && \
+    make && make install
 
 # OpenDMARC
 RUN mkdir -p /usr/src/build/opendmarc && cd /usr/src/build/opendmarc && \
