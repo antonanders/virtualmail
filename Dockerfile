@@ -142,7 +142,10 @@ RUN mkdir -p /usr/src/build/enma && cd /usr/src/build/enma && \
     curl -L http://sourceforge.net/projects/enma/files/ENMA/1.2.0/enma-1.2.0.tar.gz/download | tar zxv --strip-components=1 && \
     LDFLAGS="-L/usr/lib/libmilter" CFLAGS="-I/usr/include/libmilter" \
     ./configure --prefix=/usr --sysconfdir=/etc && \
-    make && make install
+    make && make install && \
+    mkdir -p /etc/enma
+
+
 
 # OpenDMARC
 RUN mkdir -p /usr/src/build/opendmarc && cd /usr/src/build/opendmarc && \
