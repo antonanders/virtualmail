@@ -129,6 +129,14 @@ RUN mkdir -p /usr/src/build/greylist && cd /usr/src/build/greylist && \
 
 ADD resources/greylist /etc/greylist
 
+# OpenDKIM
+RUN useradd opendkim && \
+    mkdir -p /usr/src/build/opendkim && cd /usr/src/build/opendkim && \
+    curl -L http://sourceforge.net/projects/opendkim/files/opendkim-${OPENDKIM_VERSION}.tar.gz/download | tar zxv --strip-components=1 && \
+    ./configure --prefix=/usr && make && make install
+
+ADD resources/opendkim /etc/opendkim
+
 # ENMA
 RUN mkdir -p /usr/src/build/enma && cd /usr/src/build/enma && \
     curl -L http://sourceforge.net/projects/enma/files/ENMA/1.2.0/enma-1.2.0.tar.gz/download | tar zxv --strip-components=1 && \
